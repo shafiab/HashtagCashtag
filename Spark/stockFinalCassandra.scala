@@ -14,13 +14,15 @@ import org.joda.time.DateTime
 //import org.joda.time.DateTimeZone
 //import org.joda.time.TimeZoneTable
 import org.joda.time.format._
+import com.datastax.spark.connector._
+
 
 object stockFinal
 {
 
 	// create DateTimeZone for OSLO and PST
 	val zoneFrom = DateTimeZone.forID("Europe/Oslo");
-	val  zoneTo = DateTimeZone.forID("US/Pacific");
+	val zoneTo = DateTimeZone.forID("US/Pacific");
 
 	// get time and convert from OSLO to PST
 	def getTime(dateString:String) = 
@@ -53,15 +55,20 @@ object stockFinal
 	def getWeek(year:String, month:String, day:String)=
 	{
 		val datePST = new DateTime(year.toInt, month.toInt, day.toInt, 12, 0, 0, 0, zoneTo)
-		year+'-'+datePST.getWeekOfWeekyear().toString
+		datePST.getWeekyear().toString+'-'+datePST.getWeekOfWeekyear().toString
 	}
 
 	def computeResult(granularity:String, fileName:String)
 	{
 		
-		// get spark context
-		val conf = new SparkConf().setAppName("Stock Data")
-   		val sc = new SparkContext(conf)
+   		val confSparkCassandra  = new SparkConf(true)
+					.setAppName("Stock Data")
+		   			.set("spark.cassandra.connection.host", "54.67.105.220")
+
+//		   			.set("spark.cassandra.auth.username", "ubuntu")		
+   		val sc = new SparkContext(confSparkCassandra) 
+
+
 	
 		// read input file
 		val rawUsersRDD = sc.textFile(fileName)
@@ -78,17 +85,17 @@ object stockFinal
 	      case "YEAR" =>
 	      	Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a,x,y,z)}
 	      case "MONTH" =>
-			Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+b,x,y,z)}
+			Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+'-'+b,x,y,z)}
 		  case "WEEK"=>
 		  	Dat map {case((a,b,c,d,e,f),(x,y,z))=>(getWeek(a,b,c),x,y,z)}
 	      case "DAY" =>
-	        Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+b+c,x,y,z)}
+	        Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+'-'+b+'-'+c,x,y,z)}
 	      case "HR" =>
-	        Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+b+c+d,x,y,z)}
+	        Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+'-'+b+'-'+c+'-'+d,x,y,z)}
 	      case "MIN" =>
-	        Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+b+c+d+e,x,y,z)}
+	        Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+'-'+b+'-'+c+'-'+d+'-'+e,x,y,z)}
 	      case "SEC" =>
-	      	Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+b+c+d+e+f,x,y,z)}
+	      	Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+'-'+b+'-'+c+'-'+d+'-'+e+'-'+f,x,y,z)}
 	    }
 
 	    // find maximum value
@@ -119,7 +126,34 @@ object stockFinal
 		val resultTemp = resultTemp1 join (resultTemp2) join (volume)		
 		val result = resultTemp map {case(a,(( (b, c), (d, e)), f ))=>(a,b,c,d,e,f)}
 
-		result foreach println
+		//val resultCassandra = result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.toInt, b, c, d, e, f)}
+		granularity match 
+		{
+			case "YEAR" =>
+				val resultYear = result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.toInt, b, c, d, e, f)} // keyspace, table, column names
+				resultYear.saveToCassandra("stockdata", "yearstock", SomeColumns("ticker", "year", "high", "low", "open", "close", "volume"))			
+		    case "MONTH" =>
+		    	val resultMonth = result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.split('-')(0).toInt, a.split('-')(1).toInt, b, c, d, e, f)}
+				resultMonth.saveToCassandra("stockdata", "monthstock", SomeColumns("ticker", "year", "month", "high", "low", "open", "close", "volume"))			
+			case "WEEK"=>
+				val resultWeek = result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.split('-')(0).toInt, a.split('-')(1).toInt, b, c, d, e, f)}
+				resultWeek.saveToCassandra("stockdata", "weekstock", SomeColumns("ticker", "year", "week", "high", "low", "open", "close", "volume"))			
+		    case "DAY" =>
+		    	val resultDay = result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.split('-')(0).toInt, a.split('-')(1).toInt, a.split('-')(2).toInt, b, c, d, e, f)}
+ 				resultDay.saveToCassandra("stockdata", "daystock", SomeColumns("ticker", "year", "month", "day", "high", "low", "open", "close", "volume"))			
+		    case "HR" =>
+		    	val resultHr = result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.split('-')(0).toInt, a.split('-')(1).toInt, a.split('-')(2).toInt, a.split('-')(3).toInt, b, c, d, e, f)}
+ 				resultHr.saveToCassandra("stockdata", "hourstock", SomeColumns("ticker", "year", "month", "day", "hour", "high", "low", "open", "close", "volume"))			
+		    case "MIN" =>
+			 	val resultMin = result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.split('-')(0).toInt, a.split('-')(1).toInt, a.split('-')(2).toInt, a.split('-')(3).toInt, a.split('-')(4).toInt, b, c, d, e, f)}
+ 				resultMin.saveToCassandra("stockdata", "minutestock", SomeColumns("ticker", "year", "month", "day", "hour", "minute", "high", "low", "open", "close", "volume"))			
+		    case "SEC" =>
+			 	//result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.split('-')(0).toInt, a.split('-')(1).toInt, a.split('-')(2).toInt, a.split('-')(3).toInt, a.split('-')(4).toInt, a.split('-')(5).toInt, b, c, d, e, f)}
+				//resultCassandra.saveToCassandra("stockdata", "daystock", SomeColumns("ticker", "year", "month", "day", "hour", "minute", "second", "high", "low", "open", "close", "volume"))					      	
+		}
+
+		
+
 	}
 
 	def main(args: Array[String]) 
