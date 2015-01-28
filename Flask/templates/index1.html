@@ -1,0 +1,100 @@
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+<script src="http://code.highcharts.com/stock/highstock.src.js"></script>
+
+<script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+</head>
+ 
+              
+<body>
+
+
+
+<div id="container" style="height: 400px; min-width: 310px"></div>
+            
+<p> Hello Shafi </p>
+
+<input type="text" id="stockName" placeholder="Type Stock">
+<button id="sendName" type="submit">Send name</button>
+
+<script>
+$('#sendName').click(function(){
+
+    var stockName = $('#stockName').val();
+    $.ajax({
+      url: "http://localhost:5000/getGraph/"+stockName,
+    }).done(function(data) {
+      $('#container').html(data);
+    });
+
+});
+</script>
+         
+ 
+</body>
+<script src="../Flask/js/candlestick.js"></script>
+
+
+
+ <script>
+
+$(function () {
+
+
+    var data = {{ data|safe }}
+    var text ={{text|safe}}
+
+        // create the chart
+        $('#container').highcharts('StockChart', {
+
+
+            title : {
+                text : text
+            },
+           rangeSelector : {
+                buttons : [
+                {
+                    type : 'minute',
+                    count : 5,
+                    text : '5m'
+                },
+                {
+                    type : 'minute',
+                    count : 30,
+                    text : '30m'
+                },
+                {
+                    type : 'hour',
+                    count : 1,
+                    text : '1h'
+                }, {
+                    type : 'day',
+                    count : 1,
+                    text : '1D'
+                }, {
+                    type : 'all',
+                    count : 1,
+                    text : 'All'
+                }],
+                selected : 1,
+                inputEnabled : false
+            },
+    
+
+            series : [{
+                type : 'candlestick',
+                name : text,
+                data : data,
+                
+            }]
+        });
+    });
+
+
+
+
+</script>
+ 
+</html>
