@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, redirect, url_for, request, jsonify
+from flask import Flask, render_template, redirect, url_for, request, jsonify, Response
 from cassandra.cluster import Cluster
 import time
 import pandas as pd
@@ -17,13 +17,33 @@ session = cluster.connect('stockdata')
 cluster1 = Cluster(['54.67.105.220'])
 session1 = cluster.connect('twitterseries')
 
+cluster3 = Cluster(['54.67.105.220'])
+session3 = cluster.connect('twittertrendingstreaming')
+
 #println rows
 #session = cluster.connect('test')
+
+
 
 @app.route('/')
 @app.route('/welcome')
 def welcome():
-    return render_template("test.html")
+    return render_template("newMain.html")
+
+@app.route('/liveStreaming')
+def liveStreaming():
+    rows = session3.execute("select * from toptrending30min limit 20");
+    data =[]
+    for r in rows:
+        a={}
+        a["text"] = r.ticker
+        a["size"] = r.frequency
+        data.append(a)      
+    print data
+    return render_template('simple.html', data=json.dumps(data))
+
+
+
 
 @app.route('/getGraph/<stock>')
 def showStockChart(stock, chartID = 'chart_ID', chart_type = 'StockChart', chart_height = 350):

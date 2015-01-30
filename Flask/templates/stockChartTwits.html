@@ -13,19 +13,20 @@
 
  <script>
 
+
+/////////////
+
 $(function () {
-
-
+    
     var data = {{ data|safe }}
     var text ={{text|safe}}
+    var tweets = {{tweets|safe}}
+    var sentiment = {{sentiment|safe}}
 
-        // create the chart
-        $('#container').highcharts('StockChart', {
+    // create the chart
+    $('#container').highcharts('StockChart', {
+  
 
-
-            title : {
-                text : text
-            },
            rangeSelector : {
                 buttons : [
                 {
@@ -73,23 +74,66 @@ $(function () {
                 inputEnabled : false
             },
 
-            xAxis : {
-                ordinal: false
+            title : {
+                text : text
             },
+
+                xAxis : [{
+                ordinal: true
+            },
+               {
+                ordinal: true
+            }],
             
-    
 
-            series : [{
-                type : 'candlestick',
-                name : text,
-                data : data,
-                
+        yAxis: [{
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Price'
+            },
+            height: '50%',
+            lineWidth: 2
+        }, 
+        {
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Tweets Count / Sentiment'
+            },
+            top: '65%',
+            height: '50%',
+            offset: 0,
+            lineWidth: 2
+        }
+   ],
+
+           series: [{
+                type: 'candlestick',
+                name: text,
+                data: data,
+         
+            }, {
+                type: 'column',
+                name: 'Tweets Counts',
+                data: tweets,
+                yAxis: 1,
+      
+            }, {
+                type: 'column',
+                name: 'Tweets Counts',
+                data: sentiment,
+                yAxis: 1,
+      
             }]
-        });
+
+            
     });
-
-
-
+});
 
 </script>
  

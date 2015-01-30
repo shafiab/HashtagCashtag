@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap 101 Template</title>
+
+    <!-- Bootstrap -->
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <script src="/static/bootstrap.min.css"></script>
+
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/stock/highstock.src.js"></script>
+    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="/static/d3.js"></script>
+<script src="/static/app-cloud.js"></script>
+ <script src="/static/d3.layout.cloud.js"></script>
+  </head>
+    <body>
+    <div class="jumbotron">
+      <h2>Market Sentiment Analysis</h1>
+    </div>
+
+
+<ul class="nav nav-pills">
+  <li role="presentation" class="active"><a href="#">Home</a></li>
+  <li role="presentation"><a href="#">Charts</a></li>
+  <li role="presentation"><a href="#">Twitter Trends</a></li>
+</ul>
+
+
+    <div id="responsecontainer" style="height: 400px; min-width: 310px"></div>
+
+    <div id="candleStickContainer" style="height: 400px; min-width: 310px"></div>
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    
+    
+<script type='text/javascript' src="http://netdna.bootstrapcdn.com/twitter-bootstrap/3.0.3/js/bootstrap.min.js"></script>
+
+  </body>
+
+
+
+  <script>
+    $(document).ready(
+            function() {
+                setInterval(function() {
+                    var randomnumber = Math.floor(Math.random() * 100);
+                    $('#show').text(
+                            'I am getting refreshed every 3 seconds..! Random Number ==> '
+                                    + randomnumber);
+                }, 3000);
+            });
+</script>
+
+
+        <script type="text/javascript">
+          $(function () {
+            setInterval(function () {
+        
+        $.ajax({
+          url: "http://localhost:5000/liveStreaming",
+        }).done(function(data) {
+          $('#responsecontainer').html(data);
+        });
+
+    
+
+            }, 1000);
+          })
+        </script>
+
+
+
+<script>
+var colors = d3.scale.category10();
+
+var frequency_list = {{data|safe}}; 
+  var fill = d3.scale.category20();
+  d3.layout.cloud().size([1000, 1000])
+      .words(frequency_list)
+      .padding(5)
+      .rotate(function() { return ~~(Math.random() * 2) * 90; })
+      .font("Impact")
+      .fontSize(function(d) { return d.size; })
+      .on("end", draw)
+      .start();
+  function draw(words) {
+    d3.select("body").append("svg")
+        .attr("width", 1000)
+        .attr("height", 1000)
+      .append("g")
+        .attr("transform", "translate(400,400)")
+      .selectAll("text")
+        .data(words)
+      .enter().append("text")
+        .style("font-size", function(d) { return d.size*2.5 + "px"; })
+        .style("font-family", "Impact")
+        .style("fill", function(d, i) { return fill(i); })
+          .style("fill", function(d, i) { return colors(i); })
+        .attr("text-anchor", "middle")
+        .attr("transform", function(d) {
+          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+        })
+        .text(function(d) { return d.text; });
+  }
+</script>
+
+</html>

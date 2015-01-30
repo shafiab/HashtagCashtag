@@ -1,7 +1,17 @@
 DROP KEYSPACE IF EXISTS twitterTrending;
 CREATE KEYSPACE twitterTrending WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };
 
-use twitterTrending;
+use twittertrendingstreaming;
+
+CREATE TABLE toptrending30min
+(
+ ticker text,
+ id int,
+ timestamp int,
+ frequency int,
+ sentiment int,
+ PRIMARY KEY((timestamp),id)
+ ) WITH CLUSTERING ORDER BY (id ASC);
 
 CREATE TABLE topTrendingHour (
    year int,

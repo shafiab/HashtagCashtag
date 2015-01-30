@@ -10,58 +10,56 @@ import java.io._
 
 object twitterFinalSentiment {
 	val positive = Set(
-"upgrade",
-"upgraded",
-"long",
-"buy",
-"buying",
-"growth",
-"good",
-"gained",
-"well",
-"great",
-"nice",
-"top",
-"support",
-"update",
-"strong",
-"bullish",
-"bull",
-"highs",
-"win",
-"positive",
-"profits",
-"bonus",
-"potential",
-"success",
-"winner",
-"winning",
-"good"
-)
+					"upgrade",
+					"upgraded",
+					"long",
+					"buy",
+					"buying",
+					"growth",
+					"good",
+					"gained",
+					"well",
+					"great",
+					"nice",
+					"top",
+					"support",
+					"update",
+					"strong",
+					"bullish",
+					"bull",
+					"highs",
+					"win",
+					"positive",
+					"profits",
+					"bonus",
+					"potential",
+					"success",
+					"winner",
+					"winning",
+					"good")
 
 
 val negative =Set(
-"downgraded",
-"bears",
-"bear",
-"bearish",
-"volatile",
-"short",
-"sell",
-"selling",
-"forget",
-"down",
-"resistance",
-"sold",
-"sellers",
-"negative",
-"selling",
-"blowout",
-"losses",
-"war",
-"lost",
-"loser"
-)
+					"downgraded",
+					"bears",
+					"bear",
+					"bearish",
+					"volatile",
+					"short",
+					"sell",
+					"selling",
+					"forget",
+					"down",
+					"resistance",
+					"sold",
+					"sellers",
+					"negative",
+					"selling",
+					"blowout",
+					"losses",
+					"war",
+					"lost",
+					"loser")
 
 
 	val patternWord = "\\W|\\s|\\d"
@@ -133,7 +131,7 @@ val negative =Set(
 
 	    val mapResult = (timeStep zip texts) flatMap{case(a,b)=> (patternTicker findAllIn b).map(l=>((a,l),1))}
 	   	val reduceResult = mapResult.reduceByKey(_+_).map{case ((a,b),c)=>((a,c),b)}.sortByKey(false).map{case((a,b),c)=>(a,(b,c))}
-	   	val result = reduceResult.groupByKey.map{case(a,b)=>a->b.toList.take(5)}
+	   	//val result = reduceResult.groupByKey.map{case(a,b)=>a->b.toList.take(5)}
 
 	   	// map texts to work
 		val words = (timeStep zip texts) flatMap {case(b,a)=>a.trim().toLowerCase().split(patternWord) map (c=>(b,a,c))} 

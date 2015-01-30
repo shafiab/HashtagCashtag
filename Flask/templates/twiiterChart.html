@@ -1,0 +1,176 @@
+<html>
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/stock/highstock.src.js"></script>
+    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+</head>
+ 
+              
+<body>
+    <div id="container" style="height: 400px; min-width: 310px"></div>                
+</body>
+
+
+ <script>
+
+
+/////////////
+$(function () {
+    var text ={{text|safe}}
+    var tweets = {{tweets|safe}}
+    var sentiment = {{sentiment|safe}}
+
+    Highcharts.setOptions({
+        global: {
+            timezoneOffset: 5 * 60
+        }
+    });
+
+    // create the chart
+    $('#container').highcharts('StockChart', {
+
+
+
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                hour: '%Y-%m-%d<br/> %H:%M',    
+                day: '%Y %m-%d<br/>%a',
+                week: '%Y-%m-%d<br/>%a',
+                month: '%Y-%m',
+                year: '%Y'
+            }
+        },
+        yAxis: [{
+                labels: {
+                    align: 'right',
+                    x: -3
+                },
+                title: {
+                    text: 'OHLC'
+                },
+                height: '50%',
+                lineWidth: 2
+            }, {
+                labels: {
+                    align: 'right',
+                    x: -3
+                },
+                title: {
+                    text: 'Volume'
+                },
+                top: '55%',
+                height: '50%',
+                offset: 0,
+                lineWidth: 2
+            }],
+
+
+
+        chart: {
+            alignTicks: false
+        },
+
+        rangeSelector : {
+                buttons : [
+                {
+                    type : 'minute',
+                    count : 30,
+                    text : '30m'
+                },
+                {
+                    type : 'hour',
+                    count : 1,
+                    text : '1h'
+                },    
+                 {
+                    type : 'day',
+                    count : 1,
+                    text : '1D'
+                }, 
+                {
+                    type : 'day',
+                    count : 7,
+                    text : '1W'
+                }, 
+                {
+                    type : 'Month',
+                    count : 1,
+                    text : '1M'
+                },     
+                {
+                    type : 'all',
+                    count : 1,
+                    text : 'All'
+                }],
+                selected : 4,
+                inputEnabled : false
+            },
+
+
+        title: {
+            text: text
+        },
+     
+
+
+        series: [{
+            type: 'column',
+            name: 'Number of tweets',
+            data: tweets,
+            dataGrouping: {
+                units: [
+                [
+                    'minute',
+                    [1, 2, 5, 10, 15, 30]
+                ], [
+                    'hour',
+                    [1, 2, 3, 4, 6, 8, 12]
+                ], [
+                    'day',
+                    [1]
+                ],
+                [
+                    'week', // unit name
+                    [1] // allowed multiples
+                ], [
+                    'month',
+                    [1, 2, 3, 4, 6]
+                ]]
+            }
+        },
+        {
+            type: 'column',
+            name: 'Number of tweets',
+            data: sentiment,
+            dataGrouping: {
+                units: [
+                [
+                    'minute',
+                    [1, 2, 5, 10, 15, 30]
+                ], [
+                    'hour',
+                    [1, 2, 3, 4, 6, 8, 12]
+                ], [
+                    'day',
+                    [1]
+                ],
+                [
+                    'week', // unit name
+                    [1] // allowed multiples
+                ], [
+                    'month',
+                    [1, 2, 3, 4, 6]
+                ]]
+            },
+                 yAxis: 1,
+        }
+        ]
+    });
+
+});
+/////////////
+
+</script>
+ 
+</html>

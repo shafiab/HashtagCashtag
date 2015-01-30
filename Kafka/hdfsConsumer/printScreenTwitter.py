@@ -8,9 +8,6 @@ import logging
 import socket
 import time
 
-from kafka import KafkaClient, SimpleConsumer
-from datetime import datetime
-from docopt import docopt
 def get_lock(process_name):
     global lock_socket
     lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
@@ -26,6 +23,9 @@ get_lock('twitter streaming')
 
 logging.basicConfig()
 
+from kafka import KafkaClient, SimpleConsumer
+from datetime import datetime
+from docopt import docopt
 
 kafka = KafkaClient("localhost:9092")
 
@@ -103,25 +103,16 @@ def consume_topic(topic, group, output_dir, frequency):
     global timestamp, tempfile_path, tempfile
     print "Consuming from topic '%s' in consumer group %s into %s..." % (topic, group, output_dir)
     #get timestamp
-    timestamp = standardized_timestamp(frequency)
     kafka_consumer = SimpleConsumer(kafka, group, topic, max_buffer_size=1310720000)
     
-    #open file for writing
-    tempfile_path = "/tmp/kafka_%s_%s_%s_%s.dat" % (topic, group, timestamp, batch_counter)
-    tempfile = open(tempfile_path,"w")
-    log_has_at_least_one = False #did we log at least one entry?
     while True:
         messages = kafka_consumer.get_messages(count=1000, block=False) #get 5000 messages at a time, non blocking
         if not messages:
-	    os.system("sleep 300s")
-	    continue
+	       os.system("sleep 30s")
+	continue
             #break
         for message in messages: #OffsetAndMessage(offset=43, message=Message(magic=0, attributes=0, key=None, value='some message'))
-            log_has_at_least_one = True
-            #print(message.message.value)
-            tempfile.write(message.message.value + "\n")
-        if tempfile.tell() > 10000000: #10000000: #file size > 10MB
-            flush_to_hdfs(output_dir, topic)
+            print message
         kafka_consumer.commit() #save position in the kafka queue
     #exit loop
     if log_has_at_least_one:
@@ -131,7 +122,7 @@ def consume_topic(topic, group, output_dir, frequency):
 
 
 if __name__ == '__main__':
-    group           = "HDFSConsumer"
+    group           = "screenConsumer"
     output          = "/user/data"
     topic           = "twitterStream"
     frequency       = "1"

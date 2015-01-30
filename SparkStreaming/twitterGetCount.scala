@@ -22,6 +22,9 @@ import com.datastax.spark.connector.streaming._
 
 object twitterGetCount
 {
+       // val confSparkCassandra  = new SparkConf(true)
+//            .setAppName("Twitter Streaming Series")
+  //          .set("spark.cassandra.connection.host", "54.67.105.220")
 		val positive = Set(
 		"upgrade",
 		"upgraded",
@@ -134,82 +137,74 @@ object twitterGetCount
        Some((newCount1 + oldCount1, newCount2 + oldCount2)) 
     }
 
-    def getResult(granularity:String)=
-    {
-        //val confSparkCassandra  = new SparkConf(true)
-        //        .setAppName("Twitter Streaming Series")
-        //        .set("spark.cassandra.connection.host", "54.67.105.220")
-        val sparkConf = new SparkConf().setAppName("twitter streaming count")
-        //val ssc = new StreamingContext(confSparkCassandra, Seconds(60))
-        val ssc = new StreamingContext(sparkConf, Seconds(10))
-        ssc.checkpoint("Top trending hour")
+def getResult(granularity:String)=
+  {
+ val confSparkCassandra  = new SparkConf(true)
+            .setAppName("Twitter Streaming Series")
+            .set("spark.cassandra.connection.host", "54.67.105.220")
+   // val sparkConf = new SparkConf().setAppName("twitter streaming count")
+    val ssc = new StreamingContext(confSparkCassandra, Seconds(60))
+    ssc.checkpoint("twitter count ")
 
-        // create Kakfa stream
-        // Set up the input DStream to read from Kafka (in parallel)
-        val zkQuorum = "localhost:2181"
-        val group  = "SparkStreamingTopTrending"
-        val inputTopic = "twitterStream"
-        val topicMap =  Map(inputTopic -> 1)
-        val numPartitionsOfInputTopic = 1
+    // create Kakfa stream
+    // Set up the input DStream to read from Kafka (in parallel)
+    val zkQuorum = "localhost:2181"
+    val group  = "SparkStreaming"
+    val inputTopic = "twitterStream"
+    val topicMap =  Map(inputTopic -> 1)
+    val numPartitionsOfInputTopic = 1
   
-        // create a DStream from Kafka
-        val lines = KafkaUtils.createStream(ssc, zkQuorum, group, topicMap).map(_._2)
+    // create a DStream from Kafka
+    val lines = KafkaUtils.createStream(ssc, zkQuorum, group, topicMap).map(_._2)
 
-        val tweets = lines.map( x=> parse(x))
+    val tweets = lines.map( x=> parse(x))
         
+    // calculate importance
+    //val followers = tweets.map(x=>compact(render(x \"user"\"followers_count")))
+    //val friends = tweets.map(x=>compact(render(x \"user"\"friends_count")))
+    //val importance = (followers.map(x=> x.toInt) zip friends.map(x=> x.toInt) ) map {case(a,b) => if(b>10) a/1.0/b else 1} 
 
-        // get date
-        val date = tweets.map(x=> ( getTime(compact(render(x \ "created_at" ))), compact(render(x \ "text")) )  )
-    			.map{case((a,b,c,d,e,f),text)=>(a,b,c,d,e,f,text)}
-        //val date = dateString.map(x=>getTime(x))
+    // get job description
+    //val job = tweets.map(x=>compact(render(x \"user"\"description")))
 
-        // get texts
-        val texts = tweets.map(x=>compact(render(x \ "text")))
-        val timeStep = granularity match 
-        {
-          case "YEAR" =>
-            date map {case(a,b,c,d,e,f,text)=>(a,text)}
-          case "MONTH" =>
-            date map {case(a,b,c,d,e,f,text)=>(a+'-'+b,text)}
-          case "WEEK"=>
-            date map {case(a,b,c,d,e,f,text)=>(getWeek(a,b,c),text)}
-          case "DAY" =>
-            date map {case(a,b,c,d,e,f,text)=>(a+'-'+b+'-'+c,text)}
-          case "HR" =>
-            date map {case(a,b,c,d,e,f,text)=>(a+'-'+b+'-'+c+'-'+d,text)}      
-          case "MIN" =>
-            date map {case(a,b,c,d,e,f,text)=>(a+'-'+b+'-'+c+'-'+d+'-'+e,text)}
-          case "SEC" =>
-            date map {case(a,b,c,d,e,f,text)=>(a+'-'+b+'-'+c+'-'+d+'-'+e+'-'+f,text)}         
-        }
+    // get date
+    val date = tweets.map(x=> ( getTime(compact(render(x \ "created_at" ))), compact(render(x \ "text")) )  )
+			.map{case((a,b,c,d,e,f),text)=>(a,b,c,d,e,f,text)}
+    //val date = dateString.map(x=>getTime(x))
 
-        // ticker frequency
-        val mapResult = timeStep flatMap{ case(a,b)=> (patternTicker findAllIn b).toList.map(l=>((a,l),1))}
-        //val tickerFrequency = mapResult.updateStateByKey[Int](updateFunc _)
+    // get texts
+    val texts = tweets.map(x=>compact(render(x \ "text")))
+    val timeStep = granularity match 
+    {
+      case "YEAR" =>
+        date map {case(a,b,c,d,e,f,text)=>(a,text)}
+      case "MONTH" =>
+        date map {case(a,b,c,d,e,f,text)=>(a+'-'+b,text)}
+      case "WEEK"=>
+        date map {case(a,b,c,d,e,f,text)=>(getWeek(a,b,c),text)}
+      case "DAY" =>
+        date map {case(a,b,c,d,e,f,text)=>(a+'-'+b+'-'+c,text)}
+      case "HR" =>
+        date map {case(a,b,c,d,e,f,text)=>(a+'-'+b+'-'+c+'-'+d,text)}      
+      case "MIN" =>
+        date map {case(a,b,c,d,e,f,text)=>(a+'-'+b+'-'+c+'-'+d+'-'+e,text)}
+      case "SEC" =>
+        date map {case(a,b,c,d,e,f,text)=>(a+'-'+b+'-'+c+'-'+d+'-'+e+'-'+f,text)}         
+    }
 
-        // ticker sentiment
-        val words = timeStep flatMap{ case(a,b)=> (b.trim().toLowerCase().split(patternWord)).map(c=>((a,b),getWordSentiment(c))) }
-        val sentiment = words.reduceByKey(_+_)
-        val tickerSentiment = sentiment.flatMap{ case((a,b),c) =>  (patternTicker findAllIn b).toList.map(l=>((a,l),c)) } //.reduceByKey(_+_)
-        
-        val pair1 = mapResult join tickerSentiment
+    // ticker frequency
+    val mapResult = timeStep flatMap{ case(a,b)=> (patternTicker findAllIn b).toList.map(l=>((a,l),1))}
+    //val tickerFrequency = mapResult.updateStateByKey[Int](updateFunc _)
 
-        val lastHourPair = pair1.map{ case((date,ticker),(frequency,sentiment)) => (ticker, (frequency, sentiment) }
-
-        
-        lastHourPair = reduceByKeyAndWindow((x,y)=>(x._1+y._1,x._2+y._2),Seconds(1800),Seconds(30))
-
-        val result = lastHourPair.map(case{ticker,(frequency, sentiment)}=>(frequency,(ticker,sentiment)))
-                    .sortByKey(false).map{ case(frequency,(ticker,sentiment))=>(ticker.split('$')(1), frequency, sentiment) }
-
-        
-        result.print
-
-
-
-    //    val pair2 = pair1.reduceByKey{case(x,y)=>(x._1+x._2, y._1+y._2)}
-    //val resultPair = pair1.updateStateByKey[(Int,Int)](updateFunc _)
-      //  val result = resultPair.map{case((date,ticker),(frequency,sentiment))=>(date,frequency,ticker.split('$')(1),sentiment)}
+    // ticker sentiment
+    val words = timeStep flatMap{ case(a,b)=> (b.trim().toLowerCase().split(patternWord)).map(c=>((a,b),getWordSentiment(c))) }
+    val sentiment = words.reduceByKey(_+_)
+    val tickerSentiment = sentiment.flatMap{ case((a,b),c) =>  (patternTicker findAllIn b).toList.map(l=>((a,l),c)) } //.reduceByKey(_+_)
+    
+    val pair1 = mapResult join tickerSentiment
+//    val pair2 = pair1.reduceByKey{case(x,y)=>(x._1+x._2, y._1+y._2)}
+    val resultPair = pair1.updateStateByKey[(Int,Int)](updateFunc _)
+    val result = resultPair.map{case((date,ticker),(frequency,sentiment))=>(date,frequency,ticker.split('$')(1),sentiment)}
 
     // join both table
     //val resultPair = tickerFrequency.join(tickerSentiment).map{case((a,b),(c,d))=>((a,c),(b,d))}
@@ -217,7 +212,7 @@ object twitterGetCount
 //resultMin.print()
     //tickerFrequency.print()
 
-   /*     granularity match 
+        granularity match 
         {
             case "YEAR" =>
                 val resultYear = result.map{case(date, frequency, ticker, sentiment)=> (date.toInt, frequency, ticker, sentiment)} // keyspace, table, column names
@@ -241,7 +236,7 @@ object twitterGetCount
             //case "SEC" =>
             //result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.split('-')(0).toInt, a.split('-')(1).toInt, a.split('-')(2).toInt, a.split('-')(3).toInt, a.split('-')(4).toInt, a.split('-')(5).toInt, b, c, d, e, f)}
             //resultCassandra.saveToCassandra("stockdata", "daystock", SomeColumns("ticker", "year", "month", "day", "hour", "minute", "second", "high", "low", "open", "close", "volume"))                         
-        }*/
+        }
 
 
     ssc.start()
@@ -255,13 +250,13 @@ object twitterGetCount
     def main(args: Array[String]) 
     {
 
-        /*if (args.length != 1) 
+        if (args.length != 1) 
         {
             System.err.println("twitterGetCount requires one argument")
             System.exit(1)
-        }*/
+        }
 
-        getResult()
+        getResult(args(0))
     }
 
   
