@@ -20,6 +20,10 @@ session1 = cluster.connect('twitterseries')
 cluster3 = Cluster(['54.67.105.220'])
 session3 = cluster.connect('twittertrendingstreaming')
 
+
+
+cluster4 = Cluster(['54.67.105.220'])
+session4 = cluster.connect('twitterseriescompact')
 #println rows
 #session = cluster.connect('test')
 
@@ -28,11 +32,20 @@ session3 = cluster.connect('twittertrendingstreaming')
 @app.route('/')
 @app.route('/welcome')
 def welcome():
-    return render_template("newMain.html")
+    rows = session3.execute("select * from toptrending30min limit 10");
+    data =[]
+    for r in rows:
+        a={}
+        a["text"] = r.ticker
+        a["size"] = r.frequency
+        data.append(a)      
+    print data
+    #return render_template('simple.html', data=json.dumps(data))
+    return render_template("newMain.html", data=json.dumps(data))
 
 @app.route('/liveStreaming')
 def liveStreaming():
-    rows = session3.execute("select * from toptrending30min limit 20");
+    rows = session3.execute("select * from toptrending30min limit 10");
     data =[]
     for r in rows:
         a={}
@@ -42,7 +55,18 @@ def liveStreaming():
     print data
     return render_template('simple.html', data=json.dumps(data))
 
-
+@app.route('/liveStreaming1')
+def liveStreaming1():
+    rows = session3.execute("select * from toptrending30min limit 10");
+    data =[]
+    for r in rows:
+        a={}
+        a["text"] = r.ticker
+        a["size"] = r.frequency
+        data.append(a)      
+    print data
+    return jsonify(data=data)
+    #return render_template(data=json.dumps(data))
 
 
 @app.route('/getGraph/<stock>')
@@ -59,7 +83,7 @@ def showStockChart(stock, chartID = 'chart_ID', chart_type = 'StockChart', chart
     text = stock + ' stock price'
     
 
-    rowTime = session1.execute("select * from trendingminute where ticker= '" + stock + "' ")
+    rowTime = session4.execute("select * from trendingminutecompact where ticker= '" + stock + "' ")
     data1 = []
     data2  = []
     for r in rowTime:    
@@ -87,7 +111,7 @@ def showStockChart(stock, chartID = 'chart_ID', chart_type = 'StockChart', chart
     #title = {"text": 'My Title'}
     #xAxis = {"categories": ['xAxis Data1', 'xAxis Data2', 'xAxis Data3']}
     #yAxis = {"title": {"text": 'yAxis Label'}}
-    return render_template('stockChartTwits.html', data=json.dumps(data), tweets=json.dumps(data1),sentiment=json.dumps(data2), text=json.dumps(text))
+    return render_template('stockChartTwitsCompact.html', data=json.dumps(data), tweets=json.dumps(data1),sentiment=json.dumps(data2), text=json.dumps(text))
 
 
 @app.route('/getCount/<stock>')

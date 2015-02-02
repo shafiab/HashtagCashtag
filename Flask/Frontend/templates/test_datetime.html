@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="stylesheet" type="text/css" href="static/jquery.datetimepicker.css"/ >
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+	<script src="./jquery.datetimepicker.js"></script>
+</head>
+
+
+<body>
+	<input id="datetimepicker" type="text" >
+	<script type="text/javascript">
+		jQuery('#datetimepicker').datetimepicker({
+		  format:'d.m.Y H:i',
+		  inline:true,	
+		});
+
+		jQuery('#datetimepicker').datetimepicker({
+		  onChangeDateTime:function(dp,$input){
+		    console.log($input.val())
+		  }
+		});
+	</script>
+	
+	
+</body>
+
+</html>

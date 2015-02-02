@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+  	<title>Market Sentiment</title>
+
+	<!--jQuery-->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+  	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+	<!-- google charts-->
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+
+	<div class="page-header">
+      <h1>Market Sentiment Analysis</h1>
+    </div>
+  </head>
+
+  <body>
+
+    <div role="tabpanel">
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist" id="myTab">
+      <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Trending</a></li>
+      <li role="presentation"><a href="#charts" aria-controls="profile" role="tab" data-toggle="tab">User Sentiment</a></li>
+      <li role="presentation"><a href="#trends" aria-controls="messages" role="tab" data-toggle="tab">Correlation</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="home">
+        Home Page
+        <div id="chart_div" style="width: 900px; height: 500px;"></div>
+
+
+      </div>
+      <div role="tabpanel" class="tab-pane" id="charts">
+        Charts Page
+      </div>
+      <div role="tabpanel" class="tab-pane" id="trends">
+        <div id="container" style="height: 400px; min-width: 310px"></div>                
+      </div>
+    </div>
+
+    <!-- first tab -->
+    <script>
+      $('#myTab a[href="#home"]').click(function (e) 
+      {
+		//alert('Home Clicked');
+    	e.preventDefault()
+    	$(this).tab('show')    	
+  	   });
+
+
+
+
+
+	</script>
+
+    <!-- second tab -->
+    <script>
+      $('#myTab a[href="#charts"]').click(function (e) 
+      {
+    	e.preventDefault()
+    	$(this).tab('show')
+  	   });
+    </script>
+
+    <!-- thrid tab-->
+    <script>
+	  $('#myTab a[href="#trends"]').click(function (e) {
+
+	    // Fetch the data from URL
+	    // Call the refresh_twitter_trends
+	    e.preventDefault()
+	    $(this).tab('show')
+	  });
+  	</script>
+
+
+
+
+
+
+	</div>
+  </body>
+
+  <script type="text/javascript", id="google_chart">
+	google.load("visualization", "1", {packages:["corechart"]});
+	google.setOnLoadCallback(drawChart);
+	var refresh_data = function() 
+	{
+    	$.ajax({
+	      type:"GET",
+	      url:'/live_streaming',
+	      success:function(d) {
+	        //draw_data(d.data);
+	        console.log(d);
+	      },
+	      fail: function() {
+	        alert('call failed');
+	      }
+    	});
+		};
+		setInterval(refresh_data, 500);
+
+	function drawChart() {
+	   var data = google.visualization.arrayToDataTable([
+	         ['Element', 'Density', { role: 'style' }],
+	         ['Copper', 8.94, '#b87333'],            // RGB value
+	         ['Silver', 10.49, 'silver'],            // English color name
+	         ['Gold', 19.30, 'gold'],
+	         ['Platinum', 21.45, 'color: #e5e4e2' ], // CSS-style declaration
+	      ]);
+
+	    var options = {
+	      title: 'Company Performance',
+	      vAxis: {title: 'Year',  titleTextStyle: {color: 'red'}}
+	    };
+
+		var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+
+		chart.draw(data, options);
+    }
+  </script>
+
+</html>
+

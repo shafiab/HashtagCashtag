@@ -2,7 +2,6 @@
 <meta charset="utf-8">
 <body>
 <script src="/static/d3.js"></script>
-<script src="/static/app-cloud.js"></script>
  <script src="/static/d3.layout.cloud.js"></script>
 
 
@@ -21,17 +20,16 @@ var frequency_list = {{data|safe}};
       .start();
   function draw(words) {
     d3.select("body").append("svg")
-        .attr("width", 1000)
-        .attr("height", 1000)
+        .attr("width", 700)
+        .attr("height", 700)
       .append("g")
         .attr("transform", "translate(400,400)")
       .selectAll("text")
         .data(words)
       .enter().append("text")
-        .style("font-size", function(d) { return d.size*2.5 + "px"; })
+        .style("font-size", function(d) { return Math.round(d.size*2) + "px"; })
         .style("font-family", "Impact")
         .style("fill", function(d, i) { return fill(i); })
-          .style("fill", function(d, i) { return colors(i); })
         .attr("text-anchor", "middle")
         .attr("transform", function(d) {
           return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
