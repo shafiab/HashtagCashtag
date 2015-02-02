@@ -1,7 +1,0 @@
-{
-  "name": "highcharts-cookbook-chapter-8",
-  "dependencies": {
-    "jquery": "^1.9",
-    "highcharts": "~3.0"
-  }
-}
