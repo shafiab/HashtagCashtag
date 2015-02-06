@@ -127,8 +127,8 @@ object twitterTrending {
 	
 		val hadoopConf=sc.hadoopConfiguration
         	hadoopConf.set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
-        	hadoopConf.set("fs.s3n.awsAccessKeyId","AKIAIMQO6ZMDHBBCTCLA")
-        	hadoopConf.set("fs.s3n.awsSecretAccessKey","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")
+        	hadoopConf.set("fs.s3n.awsAccessKeyId","")
+        	hadoopConf.set("fs.s3n.awsSecretAccessKey","")
 	
 		// read file
 		val rawUsersRDD = sc.textFile(fileName)		
