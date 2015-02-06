@@ -1,0 +1,3 @@
+# sparktwitterTrending.job
+type=command
+command=/root/spark/bin/spark-submit --class "twitterTrending" --jars /root/twitterTrending/target/scala-2.10/twitterTrending-assembly-1.0.jar /root/twitterTrending/target/scala-2.10/twittertrending_2.10-1.0.jar "HR" "s3n://shafi-twitter/*"

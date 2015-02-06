@@ -1,0 +1,4 @@
+# runSpark.job
+type=command
+dependencies=mergeFile
+command=/home/ubuntu/scalaProject/spark-submit --class "stockFinal" --master local[4] --jars target/scala-2.10/stockFinal-assembly-1.0.jar target/scala-2.10/stockfinal_2.10-1.0.jar "MIN" "/user/data/stockDataTmp/stockDataBig.csv"

@@ -109,7 +109,7 @@ def consume_topic(topic, group, output_dir, frequency):
     kafka_consumer = SimpleConsumer(kafka, group, topic, max_buffer_size=1310720000)
     
     #open file for writing
-    tempfile_path = "/tmp/kafka_stockTwits_%s_%s_%s_%s.dat" % (topic, group, timestamp, batch_counter)
+    tempfile_path = "/tmp/kafka_stockData_%s_%s_%s_%s.dat" % (topic, group, timestamp, batch_counter)
     tempfile = open(tempfile_path,"w")
     log_has_at_least_one = False #did we log at least one entry?
     while True:
@@ -133,7 +133,7 @@ def consume_topic(topic, group, output_dir, frequency):
 
 
 if __name__ == '__main__':
-    group           = "HDFSConsumerStock"
+    group           = "stockData"
     output          = "/user/data"
     topic           = "stock"
     frequency       = "1"

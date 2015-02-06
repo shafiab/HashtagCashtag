@@ -14,6 +14,7 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
 	<!-- Optional theme -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="./static/main.css">
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 	<!-- date time picker-->
@@ -27,7 +28,9 @@
     </div>
   </head>
 
-  <body>
+  <body style="
+    margin-left: 50px;
+    margin-right: 50px;">
 
     <div role="tabpanel">
 
@@ -43,19 +46,41 @@
     <div class="tab-content">
       <!-- first tab-->
       <div role="tabpanel" class="tab-pane active" id="home">
-        <div id="chart_div" style="width: 900px; height: 500px;"></div>
+        <div class="row">
+          <div class="col-md-8">
+            <div id="chart_div" style="width: 900px; height: 500px;"></div>
+          </div>
+          <div class="col-md-4">  
+            <div id="textSubDiv1" style ="color: white; margin-top: 30px;"></div>
+            <div id="textDiv1" style ="color: white;"></div> 
+            <div id="textSubDiv2" style ="color: white;margin-top: 10px;"></div>
+            <div id="textDiv2"style ="color: white;"></div>          
+            <div id="textSubDiv3" style ="color: white; margin-top: 10px"></div>
+            <div id="textDiv3" style ="color: white;"></div>         
+            <div id="textSubDiv4" style ="color: white; margin-top: 10px"></div>
+            <div id="textDiv4" style ="color: white;"></div>          
+            <div id="textSubDiv5" style ="color: white; margin-top: 10px"></div>
+            <div id="textDiv5" style ="color: white;"></div>                         
+ 
+
+          </div>
+        </div>
       </div>
       <!-- second tab-->
       <div role="tabpanel" class="tab-pane" id="charts">
         <div class="row">
           <!-- column for chart-->
-    			<div class="col-md-8">
+    			<div class="col-md-8">            
     				<div id="chart_top_trending_hour" style="width: 900px; height: 500px;"></div>
     			</div>
-
+          
     			<!-- column for date and time-->
     			<div class="col-md-4">
             <div class="page-header">
+              <p class="bg-primary">
+              <div id="textDiv"></div>
+              </p>
+
               <h1><small>Eastern Time Zone</small></h1>
             </div>
             
@@ -68,7 +93,7 @@
         <div class="row">
         	<div class="col-xs-6 col-md-4"></div>
   		  	<div class="col-xs-6 col-md-4" style="top: 10px;">
-        		<input type="text" id="stock_name" placeholder="Type Stock Ticker ...">
+        		<input type="text" id="stock_name" placeholder="Type Stock Ticker ..." style="margin-bottom: 20px;">
         		<button id="send_name" type="submit" class="btn btn-primary">Submit</button>
 			    </div>
         </div>
@@ -83,7 +108,7 @@
         <div class="row">
           <div class="col-xs-6 col-md-4"></div>
           <div class="col-xs-6 col-md-4" style="top: 10px;">
-            <input type="text" id="stock_name_correlation" placeholder="Type Stock Ticker ...">
+            <input type="text" id="stock_name_correlation" placeholder="Type Stock Ticker ..." style="margin-bottom: 20px;">
             <button id="send_name_correlation" type="submit" class="btn btn-primary">Submit</button>
           </div>
         </div>
@@ -149,24 +174,47 @@
 	      type:"GET",
 	      url:'/live_streaming',
 	      success:function(d) {
-	      	var data1 = new google.visualization.DataTable();
-			data1.addColumn('string','Element');
+          //text=text, author=author, dateTime=dateTime
+        callB(d.text, d.author);
+	      var data1 = new google.visualization.DataTable();
+			  data1.addColumn('string','Element');
   			data1.addColumn('number','Density');
   			data1.addColumn({type:'string', role:'style'});  // interval role col.
   			data1.addColumn({type:'string', role:'annotation'});  // interval role col.
   			data1.addRows(d.data)
-
-	        //draw_data(d.data);
-	         //console.log(data1);	
-	         google.setOnLoadCallback(drawChart(data1));
-
+        google.setOnLoadCallback(drawChart(data1));
 	      },
 	      fail: function() {
 	        alert('call failed');
 	      }
     	});
 		};
+
 		setInterval(refresh_data, 500);
+
+    function callB(x, author) {
+    $.ajax({
+       type:"GET",
+        url:'/live_streaming_tweets',
+        success:function(d) {
+          var x =d.data;
+          var full_list = ""
+          $('#textSubDiv1').text(author[0].replace(/['"]+/g, '')).addClass("blah1");
+          $('#textDiv1').text(x[0]).addClass("blah");
+          $('#textSubDiv2').text(author[1].replace(/['"]+/g, '')).addClass("blah1");
+          $('#textDiv2').text(x[1]).addClass("blah");
+          $('#textSubDiv3').text(author[2].replace(/['"]+/g, '')).addClass("blah1");
+          $('#textDiv3').text(x[2]).addClass("blah");
+          $('#textSubDiv4').text(author[3].replace(/['"]+/g, '')).addClass("blah1");
+          $('#textDiv4').text(x[3]).addClass("blah");
+          $('#textSubDiv5').text(author[4].replace(/['"]+/g, '')).addClass("blah1");          
+          $('#textDiv5').text(x[4]).addClass("blah");
+          $('#textSubDiv6').text(author[5].replace(/['"]+/g, '')).addClass("blah1");          
+          $('#textDiv6').text(x[5]).addClass("blah");         
+    }
+    });
+    }
+
 
 	function drawChart(data1) {
 	    var options = {
@@ -215,9 +263,8 @@
 	      url:"/top_trending_hour/"+link_tail,
       
 	      success:function(d) {
-	      	console.log(d.data)
-	      	var data2 = new google.visualization.DataTable();
-			data2.addColumn('string','Element');
+	      var data2 = new google.visualization.DataTable();
+			  data2.addColumn('string','Element');
   			data2.addColumn('number','Density');
   			data2.addColumn({type:'string', role:'style'});  // interval role col.
   			data2.addColumn({type:'string', role:'annotation'});  // interval role col.
@@ -449,11 +496,6 @@
           buttons : [
           {
               type : 'minute',
-              count : 5,
-              text : '5m'
-          },
-          {
-              type : 'minute',
               count : 30,
               text : '30m'
           },
@@ -462,11 +504,6 @@
               count : 1,
               text : '1h'
           },
-           {
-              type : 'minute',
-              count : 225,
-              text : 'TD'
-          }, 
 
            {
               type : 'day',
@@ -479,16 +516,16 @@
               text : '1W'
           }, 
           {
-              type : 'Month',
-              count : 1,
-              text : '1M'
+              type : 'day',
+              count : 15,
+              text : '15D'
           },     
           {
               type : 'all',
               count : 1,
               text : 'All'
           }],
-          selected : 6,
+          selected : 4,
           inputEnabled : false
       },
 

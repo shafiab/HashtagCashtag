@@ -1,0 +1,3 @@
+type=command
+command=rm -r stockDataEC2/stockData/
+dependencies=ps2

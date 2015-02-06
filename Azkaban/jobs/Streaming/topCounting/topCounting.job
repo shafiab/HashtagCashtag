@@ -1,0 +1,3 @@
+# topCounting.job
+type=command
+command=/root/spark/bin/spark-submit --class "twitterGetCount"  --jars /root/streaming/twitterGetCount/target/scala-2.10/twitterGetCount-assembly-1.0.jar  /root/streaming/twitterGetCount/target/scala-2.10/twittergetcount_2.10-1.0.jar "MIN"

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+  <title>Market Sentiment</title>
+	<link rel="stylesheet" type="text/css" href="./static/jquery.datetimepicker.css"/ >
+
+	<!--jQuery-->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+  	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+	<!-- date time picker-->
+	<script src="./static/jquery.datetimepicker.js"></script>
+	<!-- highcharts-->
+	<script src="http://code.highcharts.com/stock/highstock.src.js"></script>
+  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+
+	<div class="page-header">
+      <h1>Market Sentiment Analysis</h1>
+    </div>
+  </head>
+
+  <body style="
+    margin-left: 50px;
+    margin-right: 50px;">
+
+    <div role="tabpanel">
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist" id="myTab">
+      <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Trending</a></li>
+      <li role="presentation"><a href="#charts" aria-controls="profile" role="tab" data-toggle="tab">Top Trending</a></li>
+      <li role="presentation"><a href="#trends" aria-controls="messages" role="tab" data-toggle="tab">Charts</a></li>
+      <li role="presentation"><a href="#correlation" aria-controls="messages" role="tab" data-toggle="tab">Correlation</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <!-- first tab-->
+      <div role="tabpanel" class="tab-pane active" id="home">
+          <div class="row">
+          <!-- column for chart-->
+            <div class="col-md-8">
+              <div id="chart_div" style="width: 900px; height: 500px;"></div>
+            </div>
+            <div class="col-md-4">            
+                <div id="textDiv"></div>
+                <script language="JavaScript">
+                    <!--
+                    var r_text = new Array ();
+                    r_text[0] = "All the leaves are brown";
+                    r_text[1] = "And the sky is grey";
+                    r_text[2] = "I've been for a walk";
+                    r_text[3] = "On a winter's day";
+                    r_text[4] = "I'd be safe and warm";
+                    r_text[5] = "If I was in L.A.";
+                    r_text[6] = "California dreaming, On such a winter's day";
+                    var i = Math.floor(7*Math.random())
+
+                    document.write("Hellow");
+
+//-->
+                </script>
+            </div>
+            
+          </div>
+
+      </div>
+      <!-- second tab-->
+      <div role="tabpanel" class="tab-pane" id="charts">
+        <div class="row">
+          <!-- column for chart-->
+    			<div class="col-md-8">
+    				<div id="chart_top_trending_hour" style="width: 900px; height: 500px;"></div>
+    			</div>
+
+    			<!-- column for date and time-->
+    			<div class="col-md-4">
+            <div class="page-header">
+              <h1><small>Eastern Time Zone</small></h1>
+            </div>
+            
+    				<input id="time_date" type="text">
+    			</div>
+		    </div>
+      </div>
+      <!-- thrid tab-->
+      <div role="tabpanel" class="tab-pane" id="trends">
+        <div class="row">
+        	<div class="col-xs-6 col-md-4"></div>
+  		  	<div class="col-xs-6 col-md-4" style="top: 10px;">
+        		<input type="text" id="stock_name" placeholder="Type Stock Ticker ..." style="margin-bottom: 20px;">
+        		<button id="send_name" type="submit" class="btn btn-primary">Submit</button>
+			    </div>
+        </div>
+
+        <div class="row">
+        	<div id="twitter_time_series" style="top:10px; height: 400px; width: 300"></div>
+		    </div>                
+      </div>
+
+      <!-- fourth tab-->
+      <div role="tabpanel" class="tab-pane" id="correlation">
+        <div class="row">
+          <div class="col-xs-6 col-md-4"></div>
+          <div class="col-xs-6 col-md-4" style="top: 10px;">
+            <input type="text" id="stock_name_correlation" placeholder="Type Stock Ticker ..." style="margin-bottom: 20px;">
+            <button id="send_name_correlation" type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div id="twitter_correlation_series" style="top:10px; height: 400px; width: 300"></div>
+        </div>     
+
+      </div>
+
+
+    </div>
+
+    <!-- first tab -->
+    <script>
+      $('#myTab a[href="#home"]').click(function (e) 
+      {
+		//alert('Home Clicked');
+    	e.preventDefault()
+    	$(this).tab('show')    	
+  	   });
+
+
+
+
+
+	</script>
+
+    <!-- second tab -->
+    <script>
+      $('#myTab a[href="#charts"]').click(function (e) 
+      {
+    	e.preventDefault()
+    	$(this).tab('show')
+  	   });
+    </script>
+
+    <!-- thrid tab-->
+    <script>
+	  $('#myTab a[href="#trends"]').click(function (e) {
+
+	    // Fetch the data from URL
+	    // Call the refresh_twitter_trends
+	    e.preventDefault()
+	    $(this).tab('show')
+	  });
+  	</script>
+
+
+
+
+
+
+	</div>
+  </body>
+
+  <!-- visualization for first tab - live streaming -->
+  <script type="text/javascript">
+    $('#twitter_correlation_series').
+    
+    function print_twitter(text) {
+      var div = document.getElementById("textDiv");
+      div.textContent = "my text";
+      var text = div.textContent;
+      };
+
+  </script>
+  <script type="text/javascript", id="google_chart">
+	google.load("visualization", "1", {packages:["corechart"]});
+	var refresh_data = function() 
+	{
+    	$.ajax({
+	      type:"GET",
+	      url:'/live_streaming',
+	      success:function(d) {
+	      	var data1 = new google.visualization.DataTable();
+			data1.addColumn('string','Element');
+  			data1.addColumn('number','Density');
+  			data1.addColumn({type:'string', role:'style'});  // interval role col.
+  			data1.addColumn({type:'string', role:'annotation'});  // interval role col.
+  			data1.addRows(d.data)
+
+	        //draw_data(d.data);
+	         //console.log(data1);	
+	         google.setOnLoadCallback(drawChart(data1));
+
+	      },
+	      fail: function() {
+	        alert('call failed');
+	      }
+    	});
+		};
+		setInterval(refresh_data, 500);
+
+	function drawChart(data1) {
+	    var options = {
+	      title: 'Top Trending Stocks in last 10 minutes',
+	      vAxis: {title: '$CASHTAG',  titleTextStyle: {color: 'black'}},
+        legend: {position: 'none'}
+
+	    };
+
+		var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+
+		chart.draw(data1, options);
+    }
+  </script>
+
+
+  <!-- time date picker for 2nd tab -->
+  <script type="text/javascript">
+	jQuery('#time_date').datetimepicker({
+	  format:'d.m.Y H:i',
+	  inline:true,	
+	});
+
+	jQuery('#time_date').datetimepicker({
+	  onChangeDateTime:function(dp,$input){
+	  	var dateString = $input.val()
+	  	var d = dateString.match(/\d+/g)
+	    var day = d[0]
+	    var month = d[1]
+	    var year = d[2]
+	    var hour = d[3]
+	    var link_tail = year+'_'+month+'_'+day+'_'+hour
+	    refresh_data(link_tail)
+
+	  }
+	});
+  </script>
+
+  <!-- visualization for second tab - top trending hour -->
+  <script type="text/javascript", id="chart_top_trending_hour">
+	google.load("visualization", "1", {packages:["corechart"]});
+	var refresh_data = function(link_tail) 
+	{
+    	$.ajax({
+	      type:"GET",
+	      url:"/top_trending_hour/"+link_tail,
+      
+	      success:function(d) {
+	      	console.log(d.data)
+	      	var data2 = new google.visualization.DataTable();
+			data2.addColumn('string','Element');
+  			data2.addColumn('number','Density');
+  			data2.addColumn({type:'string', role:'style'});  // interval role col.
+  			data2.addColumn({type:'string', role:'annotation'});  // interval role col.
+  			data2.addRows(d.data)
+
+	         google.setOnLoadCallback(drawChart1(data2));
+
+	      },
+	      fail: function() {
+	        alert('call failed');
+	      }
+    	});
+		};
+		//setInterval(refresh_data, 500);
+
+	function drawChart1(data1) {
+	    var options = {
+	      title: 'Top Trending Stocks in an hour',
+	      vAxis: {title: '$CASHTAG',  titleTextStyle: {color: 'black'}},
+	      legend: {position: 'none'}
+	    };
+
+		var chart = new google.visualization.BarChart(document.getElementById('chart_top_trending_hour'));
+
+		chart.draw(data1, options);
+    }
+  </script>
+
+
+  <!-- stock symbol picker for 3rd tab -->
+  <script type="text/javascript">
+	 $('#send_name').click(function(){
+
+	    var stock_name = $('#stock_name').val();
+	    $.ajax({
+	      type:"GET",
+	      url:"/get_count_chart/"+stock_name,
+	      	success:function(d) {
+	      	//console.log(d.data2)
+	      	draw_count_series(d.data1, d.data2, d.text)
+			},
+	      fail: function() {
+	        alert('call failed');
+	      }
+    	});
+
+	});
+  </script>
+
+  <!-- visualization for 3rd tab -->
+  <script type="text/javascript", id="chart_count_series">
+  	function draw_count_series(data1, data2, text) 
+  	{
+  		Highcharts.setOptions({
+	        global: {
+	            timezoneOffset: 5 * 60
+	        }
+	    });
+
+	$('#twitter_time_series').highcharts('StockChart', {
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                hour: '%Y-%m-%d<br/> %H:%M',    
+                day: '%Y %m-%d<br/>%a',
+                week: '%Y-%m-%d<br/>%a',
+                month: '%Y-%m',
+                year: '%Y'}
+        		},
+
+        yAxis: [{
+                labels: {
+                    align: 'right',
+                    x: -3
+                },
+                title: {
+                    text: 'Number of Mentions'
+                },
+                height: '50%',
+                lineWidth: 2
+            }, {
+                labels: {
+                    align: 'right',
+                    x: -3
+                },
+                title: {
+                    text: 'Sentiment'
+                },
+                top: '55%',
+                height: '50%',
+                offset: 2,
+                lineWidth: 2
+            }],
+
+        chart: {
+            alignTicks: false
+        },
+
+        rangeSelector : {
+                buttons : [
+                {
+                    type : 'minute',
+                    count : 30,
+                    text : '30m'
+                },
+                {
+                    type : 'hour',
+                    count : 1,
+                    text : '1h'
+                },    
+                 {
+                    type : 'day',
+                    count : 1,
+                    text : '1D'
+                }, 
+                {
+                    type : 'day',
+                    count : 7,
+                    text : '1W'
+                }, 
+                {
+                    type : 'Month',
+                    count : 1,
+                    text : '1M'
+                },     
+                {
+                    type : 'all',
+                    count : 1,
+                    text : 'All'
+                }],
+                selected : 4,
+                inputEnabled : false
+            },
+
+        title:{
+            text: text
+        },
+     
+        series: [{
+            type: 'column',
+            name: 'Number of tweets',
+            data: data1,
+            dataGrouping: {
+                units: [
+                [
+                    'minute',
+                    [1, 2, 5, 10, 15, 30]
+                ], [
+                    'hour',
+                    [1, 2, 3, 4, 6, 8, 12]
+                ], [
+                    'day',
+                    [1]
+                ],
+                [
+                    'week', // unit name
+                    [1] // allowed multiples
+                ], [
+                    'month',
+                    [1, 2, 3, 4, 6]
+                ]]
+            }
+        },
+        {
+            type: 'column',
+            name: 'Number of tweets',
+            data: data2,
+            dataGrouping: {
+                units: [
+                [
+                    'minute',
+                    [1, 2, 5, 10, 15, 30]
+                ], [
+                    'hour',
+                    [1, 2, 3, 4, 6, 8, 12]
+                ], [
+                    'day',
+                    [1]
+                ],
+                [
+                    'week', // unit name
+                    [1] // allowed multiples
+                ], [
+                    'month',
+                    [1, 2, 3, 4, 6]
+                ]]
+            },
+                 yAxis: 1,
+        }
+        ]
+    });
+
+
+  	}
+  </script>
+
+  <!-- stock symbol picker for 4th tab -->
+  <script type="text/javascript",  id="correlation_time_series">
+   $('#send_name_correlation').click(function(){
+
+      var stock_name = $('#stock_name_correlation').val();
+      $.ajax({
+        type:"GET",
+        url:"/get_correlation_chart/"+stock_name,
+          success:function(d) {
+          //console.log(d.data1)
+          draw_correlation_series(d.data1, d.data2, d.text)
+      },
+        fail: function() {
+          alert('call failed');
+        }
+      });
+
+  });
+  </script>
+
+  <!-- visualization 4th tab -->
+  <script type="text/javascript">
+    function draw_correlation_series(data1, data2, text) 
+    {
+      Highcharts.setOptions({
+          global: {
+              timezoneOffset: 5 * 60
+                }
+       });
+  
+  $('#twitter_correlation_series').highcharts('StockChart', {
+     rangeSelector : {
+          buttons : [
+          {
+              type : 'hour',
+              count : 1,
+              text : '1h'
+          },
+           {
+              type : 'day',
+              count : 1,
+              text : '1D'
+          }, 
+          {
+              type : 'day',
+              count : 3,
+              text : '3D'
+          },   
+          {
+              type : 'day',
+              count : 7,
+              text : '1W'
+          },   
+          {
+              type : 'all',
+              count : 1,
+              text : 'All'
+          }],
+          selected : 2,
+          inputEnabled : false
+      },
+
+      title : {
+          text : text
+      },
+
+          xAxis : [{
+          ordinal: true
+      },
+         {
+          ordinal: true
+      }],
+      xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: {
+          hour: '%Y-%M-%d<br/> %H:%M',    
+          day: '%Y %m-%d<br/>%a',
+          week: '%Y-%m-%d<br/>%a',
+          month: '%Y-%m',
+          year: '%Y'}
+      },
+      yAxis: [{
+          labels: {
+              align: 'right',
+              x: -3
+          },
+          title: {
+              text: 'Stock Price'
+          },
+          height: '50%',
+          lineWidth: 2
+      }, 
+        {
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Number of mentions'
+            },
+            top: '65%',
+            height: '50%',
+            offset: 0,
+            lineWidth: 2
+        }
+     ],
+
+     series: [{
+          type: 'candlestick',
+          name: text,
+          data: data1,
+   
+      }, 
+      {
+          type: 'column',
+          name: 'Tweets Counts',
+          data: data2,
+          yAxis: 1,
+      }] 
+    });
+  }
+
+  </script>
+
+
+
+
+
+</html>
+

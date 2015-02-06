@@ -1,0 +1,4 @@
+# runSpark.job
+type=command
+dependencies=runSpark
+command=hdfs dfs -rm /user/data/stockDataTmp/stockDataBig.csv

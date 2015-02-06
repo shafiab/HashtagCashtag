@@ -1,0 +1,5 @@
+# copyToS3fromHDFS.job
+type=command
+# copy to local
+command=hdfs dfs -copyToLocal /user/data/stockData /home/ubuntu/stockDataEC2/
+

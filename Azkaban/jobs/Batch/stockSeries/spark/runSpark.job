@@ -1,0 +1,2 @@
+type=command
+command=/root/spark/bin/spark-submit --class "stockFinal" --jars /root/stockBatch/target/scala-2.10/stockFinal-assembly-1.0.jar /root/stockBatch/target/scala-2.10/stockfinal_2.10-1.0.jar "MIN" "s3n://shafi-s3/*"

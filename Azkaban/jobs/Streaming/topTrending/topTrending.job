@@ -1,0 +1,3 @@
+# topTrending.job
+type=command
+command=/root/spark/bin/spark-submit --class "twitterTopTrending" --jars /root/streaming/twitterTopTrending/target/scala-2.10/twitterTopTrending-assembly-1.0.jar /root/streaming/twitterTopTrending/target/scala-2.10/twittertoptrending_2.10-1.0.jar

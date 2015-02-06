@@ -1,0 +1,5 @@
+MAILTO=shafiab@gmail.com
+0 * * * * aws s3 cp /home/ubuntu/stockDataEC2/stockData s3://shafi-s3/ --recursive >/dev/null
+
+MAILTO=shafiab@gmail.com
+0 * * * * hdfs dfs -copyToLocal /user/data/stockData /home/ubuntu/stockDataEC2/ >/dev/null

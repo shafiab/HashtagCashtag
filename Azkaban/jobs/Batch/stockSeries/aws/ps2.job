@@ -1,0 +1,3 @@
+type=command
+command=aws s3 cp /home/ubuntu/stockDataEC2/stockData s3://shafi-s3/ --recursive 
+dependencies=ps1

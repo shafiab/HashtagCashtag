@@ -1,0 +1,3 @@
+# mergeFile.job
+type=command
+command=hdfs dfs -cat  /user/data/stockData/* | hdfs dfs -put - /user/data/stockDataTmp/stockDataBig.csv
