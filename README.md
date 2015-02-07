@@ -1,4 +1,4 @@
-#Cashtag
+ #Cashtag
 ======================================
 
 ## Big data pipeline for user sentiment analysis on US stock market
@@ -36,7 +36,44 @@ Users can also find the time series information about a stock - how many time th
  
  ![Raw Stock File](Figures/netfonds.png)
  
+ A multi-consumer multi-topic Kafka instance acts as the data ingestion platform. Both twitter data and stock data are stored in the Kafka first. Python scripts are written to perform these tasks.
  
+# Source of Truth
+Initially, the source of truth for #Cashtag was HDFS drive in the master EC2 node. Kafka consumer programs, written in python, fetch data from Kafka and write it to HDFS. Later, the source of truth was moved to Amazon S3 drives due to the ease of use.
+
+# Batch Layer
+The choice of tool for batch layer in #Cashtag is Spark. Codes are written in Scala. Several batch layer jobs are running periodically throughout the day, where the batch layer jobs are collecting raw data from S3 disk and performing necessary tasks and saving the results in the Serving layer. Azkaban is the tool of choice in #Cashtag to perform scheduling of different batch jobs. The reason for choosing Azkaban over crontab was the nice visual user interface, the ease of parallelizing of different tasks in the flow as well as its ability to restart a program in case of failure - and of course the fact that its called Azkaban! 
+
+Several taks are performed by the batch layer:
+
+  1. number of mentions of a stock over different time granularity - minute, hour, day, year etc.
+  2. users' sentiment of the stock over different time granularity
+  3. top trending stocks at different time granularity
+  4. computing the high, low, open, close and volume data of different stocks at different time granularity.
+  
+
+## Sentiment Analysis
+
+ #Cashtag also performs a very simple sentiment analysis over different trending stocks. While the main motivation behind creating #Cashtag was to create the underlying data pipeline that will enable the end users - data scientist, analyst to perform advanced algorithmic analysis to find the sentimets, I also felt it would be interesting to showcase the ability of this platform by showing a simple sentiment analysis. For this task, #Cashtag looks for keywords in each tweets and provides a score of +1 for every positive word it encounters and a -1 for every negative word. The overall sentiment of that tweet then is the sum of all the score of all the words in the tweet.
+ 
+![Raw Stock File](Figures/sentiment.png)
+
+
+
+![Raw Stock File](Figures/batch_result0.png)
+![Raw Stock File](Figures/batch_result1.png)
+
+# Speed Layer
+
+Speed layer in #Cashtag performs multiple operations. The tool of choice for speed layer is Spark Streaming. Codes are written in scala.
+
+## Incremental algorithm to supplement 
+
+![Raw Stock File](Figures/batch_streaming.png)
+
+One of the motivation behind having a speed layer in lambda architecture is to supplement the batch layer. The batch layer implements re-computation algorithm that works on the entire sets of raw data and compute the necessary results. Since batch layer is working on the entire raw data set, batch layer is generally time intensive and takes long time to process the entire sets of data. In such cases, speed layer works on the recent data and provide real time result for these data. 
+
+
  public data from the United States Patent and Trademark Office (USPTO) 
 and statistics from the Census Bureau, placing the files on the name node 
 of a Amazon Web Services (AWS) cluster of Elastic Compute Cloud(EC2).  Specifically, a collection of Bash and Python 
