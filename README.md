@@ -1,16 +1,22 @@
-"#Cashtag "Patently Innovative
+#Cashtag
 ======================================
 
-dd
-## Finding where innovation lives!
-[www.patentlyinnovative.net](http://www.patentlyinnovative.net)
+## Big data pipeline for user sentiment analysis on US stock market
+[www.hashtagcashtag.com](http://www.hashtagcashtag.com)
 
-Patently Innovative is a tool to track innovation in different states 
-by collecting, cleaning, and aggregating patent information from the 
-United States Patent and Trademark Office (USPTO) using technologies from the
- Hadoop ecosystem.
+#Cashtag is a big data pipeline to aggregate twitter data relevant to different stocks for New York Stock Exchange (NYSE) and NASDAQ stock market and provides an analytic framework to perform user sentiment analysis on different stocks and finding the correlation with the corresponding stock price.
 
-# What Patently Innovative Does
+# What #Cashtag Does
+#Cashtag allows user to easily check the top trending stocks @twitter at different time.
+![#Cashtag Demo](figures/tab1.png)
+Users can look into the historical data and discover the top trending stocks and sentiment of twitter users on that stock at different hours of the day.
+![#Cashtag Demo](figures/tab2.png)
+Users can also find the time series information about a stock - how many time the stock has been mentioned over time as well as corresponding sentiment. 
+![#Cashtag Demo](figures/tab3.png)
+#Cashtag also allows user to find the correlation betweent the number of mentions of a stock @twitter and the stocks price fluctuation over time.
+![#Cashtag Demo](figures/tab4.png)
+
+
 Patently Innovative allows users to easily check and compare the patent 
 production trends of various states.  The user interface, built with
 Highmaps, allows the user to click on as many states as desired and
@@ -18,7 +24,7 @@ see the trends for patent production.  Patent production can be viewed
 as a raw total or per capita.  For example, you can easily compare the 
 patent trends between California and Texas.
 
-![Patently Innovative Demo](figures/demo.png)
+
 
 Patent information can be displayed at different granularities in time, 
 either monthly or yearly.
