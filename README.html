@@ -199,7 +199,7 @@ stored in highly nested XML files.  Semi-structured data like XML allows flexibi
 formatting, but can be tricky to parse on distributed systems, pulling out only
  the relevant information rather than the various tags (see sample below).</p>
 
-<p><img src="figures/xml-multi.png" alt="Raw XML File"/></p>
+<p><img src="Figures/xml-multi.png" alt="Raw XML File"/></p>
 
 <p>Unfortunately, the USPTO lists each patent on several different lines, which vary
 greatly from patent to patent depending on the number of authors, organizations, etc.  This is imcompatible with most
@@ -207,7 +207,7 @@ greatly from patent to patent depending on the number of authors, organizations,
 on a single line.  For this reason, the XML files are cleaned and parsed using 
 Bash and Python scripts before further processing within the Hadoop ecosystem.</p>
 
-<p><img src="figures/parallel.png" alt="Worked Node Parallelization"/></p>
+<p><img src="Figures/parallel.png" alt="Worked Node Parallelization"/></p>
 
 <p>To circumvent this bottleneck, I have wrote a meta-programming script that splits this workload 
 onto the worker nodes.  This is accomplished by finding the ip addresses of the 
@@ -215,7 +215,7 @@ worker nodes using the <em>dfsadmin</em> command, then the <em>scp</em>, <em>ssh
 relevant scripts.  This work around achieves scalability, but lacks the true fault
  tolerance of the Hadoop ecosystem.  </p>
 
-<p><img src="figures/single-json.png" alt="Single-Line Record JSON"/></p>
+<p><img src="Figures/single-json.png" alt="Single-Line Record JSON"/></p>
 
 <h2>Batch Processing</h2>
 
@@ -225,7 +225,7 @@ from the closing tags of XML.  An example of the JSON data, with some of the
 relevant information highlighted, is shown below with pretty-print formatting in both the 
 original XML and the JSON formats.</p>
 
-<p><img src="figures/json.png" alt="JSON Records"/></p>
+<p><img src="Figures/json.png" alt="JSON Records"/></p>
 
 <p>After processing and staging on the Linux File System of the nodes, the JSON 
 records are placed on the HDFS, partitioned by the year of the patent.  The files 
@@ -233,7 +233,7 @@ are then loaded into Hive tables using the open source serialization/deserializa
 tools developed by <a href="https://github.com/rcongiu/Hive-JSON-Serde">Roberto Congiu</a>.  My Hive 
 schema is shown below with the same nested structure as the JSON files.</p>
 
-<p><img src="figures/serde.png" alt="Open Source Serialization Tool"/></p>
+<p><img src="Figures/serde.png" alt="Open Source Serialization Tool"/></p>
 
 <p>This SerDe is perfect for my data, which is highly nested and has a very dynamic schema over the various 
 years.  Unlike some of the native Hive tools, this SerDe allows me to ignore the 
@@ -241,7 +241,7 @@ superfluous information, and just extract what&#39;s needed.  More so, by taking
 advantage of Hive, nearly two decades of data (around 50GB) can be calculated in a batch process of only 20 minutes&hellip;very cool!<br/>
 After this, the data is in the nice tabular form.</p>
 
-<p><img src="figures/tabular.png" alt="Tabular Data after Hive Cleansing"/></p>
+<p><img src="Figures/tabular.png" alt="Tabular Data after Hive Cleansing"/></p>
 
 <h2>Real-Time Queries</h2>
 
@@ -249,7 +249,7 @@ After this, the data is in the nice tabular form.</p>
  real-time queries. This is done using short-fat tables with many, many columns that are automatically generated from scripts. 
 By using multiple tables aggregated over different time granularities, the queries are easily sub-second for the whole data set.</p>
 
-<p><img src="figures/hbase-schema.png" alt="HBase Schemas"/> </p>
+<p><img src="Figures/hbase-schema.png" alt="HBase Schemas"/> </p>
 
 <p>For the front-end, I used the Thrift protocol via HappyBase with the Python Flask 
  library to setup a RESTful API.  This API is then queried for a nice visual UI, I modified 
