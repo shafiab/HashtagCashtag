@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# test script to display in console
 import os
 import re
 import sys

@@ -1,5 +1,4 @@
 import java.util.Properties
-
 import kafka.producer._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -17,12 +16,13 @@ import org.joda.time._
 import org.joda.time.DateTime
 import org.joda.time.format._
 import java.io.PrintWriter
-
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.streaming._
 
 object twitterTopTrending
-{
+{	
+	// sentiments, hardcoded for now
+	// will change it layer to read from a file
 		val positive = Set(
 		"upgrade",
 		"upgraded",
@@ -87,9 +87,8 @@ object twitterTopTrending
     val patternTicker = "\\$[A-Z]+".r
     
 
-    // get month number
-    // could not find a good substitute 
-    // in joda-time
+    // get month index
+    // no good substitute in joda-time
     def getMonth(month:String)=
     { 
         val m = month.toUpperCase() match
@@ -111,6 +110,7 @@ object twitterTopTrending
         m.toString
     }
 
+	
     // get time from date string
     def getTime(dateString:String) = 
     {
@@ -127,13 +127,15 @@ object twitterTopTrending
 
     }
 
-    // get week for week calculation
+	
+    // get week index for week calculation
     def getWeek(year:String, month:String, day:String)=
     {
         val date = new DateTime(year.toInt, month.toInt, day.toInt, 12, 0, 0, 0)
         date.getWeekyear().toString+'-'+date.getWeekOfWeekyear().toString
     }
     
+	
     // main function
     def getResult()=
     {
@@ -174,7 +176,9 @@ object twitterTopTrending
 
 
         // select granularity
-        val granularity = "MIN"
+        val granularity = "MIN" // currently hard-coded to min
+		// however code is generic for any granularity
+		
         val timeStep = granularity match 
         {
           case "YEAR" =>
@@ -199,7 +203,7 @@ object twitterTopTrending
 
 
         // find ticker sentiment
-        val words = timeStep flatMap{ case(a,b)=> (b.trim().toLowerCase().split(patternWord)).map(c=>((a,b),getWordSentiment(c))) }
+        val words = timeStep flatMap{ case(a,b)=> 		(b.trim().toLowerCase().split(patternWord)).map(c=>((a,b),getWordSentiment(c))) }
         val sentiment = words.reduceByKey(_+_)
         val tickerSentiment = sentiment.flatMap{ case((a,b),c) =>  (patternTicker findAllIn b).toList.map(l=>((a,l),c)) } 
 
@@ -228,12 +232,10 @@ object twitterTopTrending
 	   // save to cassandra
 	   resultTimeStamped.saveToCassandra("twittertrendingstreaming", "toptrending30min", SomeColumns("timestamp", "id", "ticker", "frequency", "sentiment"))
 
-
         ssc.start()
         ssc.awaitTermination()
 
   }
-
 
 
     def main(args: Array[String]) 

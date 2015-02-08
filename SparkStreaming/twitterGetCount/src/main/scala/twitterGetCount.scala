@@ -19,6 +19,8 @@ import com.datastax.spark.connector.streaming._
 
 object twitterGetCount
 {
+	// sentiment - currently hardcoded
+	// need to change to read from a file
 	val positive = Set(
 		"upgrade",
 		"upgraded",
@@ -71,6 +73,7 @@ object twitterGetCount
 		"lost",
 		"loser")
 	
+	// get sentiment of a word
 	def getWordSentiment(word:String)=
 	{
 		if (positive.contains(word)) 1 
@@ -81,6 +84,7 @@ object twitterGetCount
     val patternWord = "\\W|\\s|\\d"
     val patternTicker = "\\$[A-Z]+".r
     
+	// get index of a month
     def getMonth(month:String)=
     { 
         val m = month.toUpperCase() match
@@ -102,6 +106,7 @@ object twitterGetCount
         m.toString
     }
 
+	// return date-time from string
     def getTime(dateString:String) = 
     {
         val str = dateString.split(' ')
@@ -116,12 +121,14 @@ object twitterGetCount
         ( Year, Month, Day, Hr, Min, Sec)
     }
 
+	// return week index
     def getWeek(year:String, month:String, day:String)=
     {
         val date = new DateTime(year.toInt, month.toInt, day.toInt, 12, 0, 0, 0)
         date.getWeekyear().toString+'-'+date.getWeekOfWeekyear().toString
     }
     
+	// update function for updateStateByKey
     def updateFunc(values: Seq[(Int,Int)], runningCount: Option[(Int,Int)]):
       Option[(Int,Int)] = {
         val newCount1 = values.map(x=>x._1).sum 
@@ -131,14 +138,18 @@ object twitterGetCount
        Some((newCount1 + oldCount1, newCount2 + oldCount2)) 
     }
 
+	// main function
     def getResult(granularity:String)=
     {
-
+		// create configuration
         val confSparkCassandra  = new SparkConf(true)
                     .setAppName("Twitter Streaming Series")
                     .set("spark.cassandra.connection.host", "54.67.105.220")
     
+		// create spark streaming context
         val ssc = new StreamingContext(confSparkCassandra, Seconds(60))
+		
+		// create checkpoint
         ssc.checkpoint("twitter count")
 
         // create Kakfa stream
@@ -152,6 +163,7 @@ object twitterGetCount
         // create a DStream from Kafka
         val lines = KafkaUtils.createStream(ssc, zkQuorum, group, topicMap).map(_._2)
 
+		// perform json parsing
         val tweets = lines.map( x=> parse(x))
         
         // get date
@@ -161,6 +173,8 @@ object twitterGetCount
 
         // get texts
         val texts = tweets.map(x=>compact(render(x \ "text")))
+		
+		// map based on time granularity
         val timeStep = granularity match 
         {
           case "YEAR" =>
@@ -181,12 +195,11 @@ object twitterGetCount
 
         // ticker frequency
         val mapResult = timeStep flatMap{ case(a,b)=> (patternTicker findAllIn b).toList.map(l=>((a,l),1))}
-        //val tickerFrequency = mapResult.updateStateByKey[Int](updateFunc _)
 
         // ticker sentiment
         val words = timeStep flatMap{ case(a,b)=> (b.trim().toLowerCase().split(patternWord)).map(c=>((a,b),getWordSentiment(c))) }
         val sentiment = words.reduceByKey(_+_)
-        val tickerSentiment = sentiment.flatMap{ case((a,b),c) =>  (patternTicker findAllIn b).toList.map(l=>((a,l),c)) } //.reduceByKey(_+_)
+        val tickerSentiment = sentiment.flatMap{ case((a,b),c) =>  (patternTicker findAllIn b).toList.map(l=>((a,l),c)) } 
         
         // join ticker frequency and sentiment
         val pair1 = mapResult join tickerSentiment

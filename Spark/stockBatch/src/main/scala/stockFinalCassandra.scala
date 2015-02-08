@@ -61,14 +61,16 @@ object stockFinal
 	def computeResult(granularity:String, fileName:String)
 	{
 		
+		// create conf file
    		val confSparkCassandra  = new SparkConf(true)
 					.setAppName("Stock Data")
 		   			.set("spark.cassandra.connection.host", "54.67.105.220")
-
-//		   			.set("spark.cassandra.auth.username", "ubuntu")		
+		
+		// create spark context
    		val sc = new SparkContext(confSparkCassandra) 
 
-         val hadoopConf=sc.hadoopConfiguration;
+        // create S3 access configuration
+		val hadoopConf=sc.hadoopConfiguration;
         hadoopConf.set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
         hadoopConf.set("fs.s3n.awsAccessKeyId","")
         hadoopConf.set("fs.s3n.awsSecretAccessKey","")
@@ -76,13 +78,14 @@ object stockFinal
 		// read input file
 		val rawUsersRDD = sc.textFile(fileName)
 		val rawUsersRDD1 = rawUsersRDD.filter(x=> (x.length>0))
-		// val rawUsersRDD = sc.textFile(','.join(filesName))
+		
 		// process input line and convert it to key, column value format
-		val data = rawUsersRDD1.map(line => line.split(",").map(elem=>elem.trim))
+		val data = rawUsersRDD1.map(line => 	line.split(",").map(elem=>elem.trim))
 		val Dat1 = data.map(line=> (line(1),line(2),line(3),line(4)))
+		
 		// convert time from OSLO to PST
-		//		Dat1 foreach println
 		val Dat = Dat1 map {case(a,b,c,d) => (getTime(b)->(a,c,d))}  
+
 		// create time key for the time granularity
 		val Data = granularity match 
 		{
@@ -101,6 +104,7 @@ object stockFinal
 	      case "SEC" =>
 	      	Dat map {case((a,b,c,d,e,f),(x,y,z))=>(a+'-'+b+'-'+c+'-'+d+'-'+e+'-'+f,x,y,z)}
 	    }
+
 	    // find maximum value
 		val maxx = Data.map{case(a,b,c,d)=>((a,b),c)} 
 					   .reduceByKey{(x,y)=> if(x>y) x else y}
@@ -113,7 +117,8 @@ object stockFinal
 		val opening = Data.map{case(a,b,c,d)=>((a,b),c)}
 						  .groupByKey() 
 						  .map{case(a,b)=>(a->b.toList.head)}
-		// find closing value
+
+	  // find closing value
 		val closing = Data.map{case(a,b,c,d)=>((a,b),c)}
 						  .groupByKey()
 						  .map{case(a,b)=>(a->b.toList.last)}
@@ -122,12 +127,13 @@ object stockFinal
 		val volume =  Data.map{case(a,b,c,d)=>((a,b),d.toDouble)}
 						  .reduceByKey(_+_) 
 
-		// create result				   	
+		// create result by joining
 		val resultTemp1 =  maxx join (minn)
 		val resultTemp2 = opening join (closing) 
 		val resultTemp = resultTemp1 join (resultTemp2) join (volume)		
 		val result = resultTemp map {case(a,(( (b, c), (d, e)), f ))=>(a,b,c,d,e,f)}
-		//val resultCassandra = result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.toInt, b, c, d, e, f)}
+		
+		// write to Cassandra
 		granularity match 
 		{
 			case "YEAR" =>
@@ -154,11 +160,9 @@ object stockFinal
 			 	//result.map{case((a,ticker),b,c,d,e,f)=> (ticker, a.split('-')(0).toInt, a.split('-')(1).toInt, a.split('-')(2).toInt, a.split('-')(3).toInt, a.split('-')(4).toInt, a.split('-')(5).toInt, b, c, d, e, f)}
 				//resultCassandra.saveToCassandra("stockdata", "daystock", SomeColumns("ticker", "year", "month", "day", "hour", "minute", "second", "high", "low", "open", "close", "volume"))					      	
 		}
-
-		
-
 	}
 
+	
 	def main(args: Array[String]) 
 	{
 		// check number of input arguments

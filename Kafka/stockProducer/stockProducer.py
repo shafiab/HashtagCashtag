@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Feb  1 12:16:24 2015
-
+this program fetch stock data from netfonds.no 
+perform diff with previously fetched data and write
+the difference in Kafka
 @author: shafiab
 """
 from kafka import *
@@ -20,7 +22,7 @@ path = '/tmp/'
 
 def doWork(ticker, exchange):
     while True:
-        date = '20150202' #dt.datetime.now().strftime("%Y%m%d")
+        date = dt.datetime.now().strftime("%Y%m%d")
         #if dt.datetime.now().hour >14 or dt.datetime.now().hour<6:
         #    time.sleep(3600) # sleep for an hour at night
             
@@ -44,18 +46,8 @@ def doWork(ticker, exchange):
 	with open(fileNameNew) as f1:
     	    lineset = set(f1)
 	with open(fileNameOld) as f2:
-    	    lineset.difference_update(f2)
-	#with open('file3', 'w') as out:
-    	#	for line in lineset:
-        #		out.write(line)
-	#cmd = ("comm -13 <(sort %s) <(sort %s) > %s" % (fileNameOld, fileNameNew, fileNameTmp))
-        #cmd = ("comm -13 %s %s > %s"  % (fileNameOld, fileNameNew, fileNameTmp))
-        #print cmd
-	#code = os.system(cmd)    
-        
-	#print code
-        #if code==0: #success
-            # move new file to old file
+		lineset.difference_update(f2)
+
 	    print 'moving new file to old file'
             cmdMove= ("mv %s %s" % (fileNameNew, fileNameOld))
             os.system(cmdMove)
@@ -70,14 +62,6 @@ def doWork(ticker, exchange):
                         transformedLine = ','.join(newLine) +','+','.join(line)
 			print transformedLine
                         producer.send_messages(topicName,transformedLine)
-	    	#fileTmp.close()
-	   # time.sleep(300) # sleep for 5mins		
     
 if __name__ == "__main__":
-    doWork(sys.argv[1], sys.argv[2])
-
-
-                
-
-
-#comm -13 AAPLOld.csv AAPLNew.csv > diff.txt
+    doWork(sys.argv[1], sys.argv[2])                

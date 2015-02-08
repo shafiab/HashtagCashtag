@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Feb  2 05:21:31 2015
-
+this script submit stockProducer job for 
+each individual stocks
 @author: shafiab
 """
 import os.path
@@ -9,8 +10,8 @@ import cashtagSet
 
 
 
-#cmd = 'nohup python /home/ubuntu/stockProducer/stockProducer.py '
-cmd = 'nohup python /home/ubuntu/stockProducer/stockProducerOneShot.py ' 
+cmd = 'nohup python /home/ubuntu/stockProducer/stockProducer.py '
+#cmd = 'nohup python /home/ubuntu/stockProducer/stockProducerOneShot.py ' 
 suffix = ' &'
 
 def submitJob(stock, exchange):

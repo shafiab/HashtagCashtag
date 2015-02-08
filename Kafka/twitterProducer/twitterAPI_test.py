@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jan 16 17:27:10 2015
-
+this is twitter producer for Kafka
+this program fetch twitter data relevant to
+stocks and put it in Kafka
 @author: shafiab
 """
 from kafka import *
