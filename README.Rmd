@@ -23,7 +23,7 @@ Users can also find the time series information about a stock - how many time th
 
 
 # How #Cashtag Works
- #Cashtag pipeline is based on $\lambda$ architecture.The pipeline consists of an ingestion layer, batch layer, speed layer, serving layer and frontend. The pipeline diagram is shown below:
+ #Cashtag pipeline is based on &#x3bb; architecture.The pipeline consists of an ingestion layer, batch layer, speed layer, serving layer and frontend. The pipeline diagram is shown below:
 
 ![Data Pipeline](Figures/pipeline.png) 
 
@@ -82,79 +82,22 @@ Speed layer also calculates the top trending stocks over the last 10 minutes - t
 
 # Serving Layer
 
-The choice of database for serving layer in #Cashtag is Cassandra. #Cashtag deals with a lot of time series data. Time series data operation is an excellent use case for Cassandra. An excellent article on the use of time series data for Cassandra can be found in http://planetcassandra.org/getting-started-with-time-series-data-modeling/. Data from batch layer and speed layer are saved in Cassandra. We can refer to these tables as batch view and real-time view. 
+The choice of database for serving layer in #Cashtag is Cassandra. #Cashtag deals with a lot of time series data. Time series data operation is an excellent use case for Cassandra. An  excellent article on the use of time series data for Cassandra can be found in http://planetcassandra.org/getting-started-with-time-series-data-modeling/. Data from batch layer and speed layer are saved in Cassandra. We can refer to these tables as batch view and real-time view. 
 
-
- public data from the United States Patent and Trademark Office (USPTO) 
-and statistics from the Census Bureau, placing the files on the name node 
-of a Amazon Web Services (AWS) cluster of Elastic Compute Cloud(EC2).  Specifically, a collection of Bash and Python 
-scripts use Beautiful Soup to scrape the USPTO website to find the links to 
-the relevant zip files.  The patent office releases new data weekly, which are
-downloaded and updated with cron jobs.
-  
-The full fidelity zip files are immediately stored on the Hadoop Distributed File
- System (HDFS) for safe keeping via redundancy.  Some of the data is in simple 
-Tab Separated Values (TSV) files, but the most recent patent information is
-stored in highly nested XML files.  Semi-structured data like XML allows flexibile 
-formatting, but can be tricky to parse on distributed systems, pulling out only
- the relevant information rather than the various tags (see sample below).
-
-![Raw XML File](Figures/xml-multi.png)
+ #Cashtag saves data in multiple de-normalized tables. For efficient read and write operation for both Spark and Spark Streaming to Cassandra connector, as well as for Cassandra to Frontend, the scheme design is very important. The schema for each table has been chosen carefully to make these operation efficient and simple. The schemas are described below:
  
-Unfortunately, the USPTO lists each patent on several different lines, which vary
-greatly from patent to patent depending on the number of authors, organizations, etc.  This is imcompatible with most
- technologies in the Hadoop ecosystem, which typically require a single record 
-on a single line.  For this reason, the XML files are cleaned and parsed using 
-Bash and Python scripts before further processing within the Hadoop ecosystem.
-
-![Worked Node Parallelization](Figures/parallel.png)
+ 1. Twitter Time Series for Tab 3 and 4
+  - partitioned by ticker symbol
+  - clustering order by (year, month, day, hour, minute)
+ 2.Top Trending stocks for Tab 2
+  - partitioned by (year, month, day, hour)
+  - clustering order by number of mentions
+ 3. Stock Time Series for Tab 4
+  - partitioned by ticker symbol
+  - clustering order by (year, month, day, hour, minute)
   
-To circumvent this bottleneck, I have wrote a meta-programming script that splits this workload 
-onto the worker nodes.  This is accomplished by finding the ip addresses of the 
-worker nodes using the *dfsadmin* command, then the *scp*, *ssh*, and *tmux* commands to distribute and run the 
-relevant scripts.  This work around achieves scalability, but lacks the true fault
- tolerance of the Hadoop ecosystem.  
+The schema design for the rolling count dashboard in Tab 1 to represent the top trending stock in the last 10 minutes was quite tricky. Cassandra is generally a good choice for creating a rolling count dashboard due to its support for TTL (time to live) for each entry. Unfortunately, support for TTL is not available in the current Spark/Spark Streaming to Cassandra connector. As a result I need to improvise. While writing the top trending tickers to cassandra, I added a timestamp to each entry.  The Cassandra table was partitioned by ranking and clustering ordered by the time stamp. In the dashboard, the query was to select the top five stock by the ranking id and ordered descendingly by the timestamp. This gives me the latest entries from the table.
 
-![Single-Line Record JSON](Figures/single-json.png)
+# Front End
 
-## Batch Processing
-
-After this staging, the patents are converted into single-line JSON records for further cleaning with Hive.  
-JSON still has the flexibility of semi-structured data, but without the added size 
-from the closing tags of XML.  An example of the JSON data, with some of the 
-relevant information highlighted, is shown below with pretty-print formatting in both the 
-original XML and the JSON formats.
-
-![JSON Records](Figures/json.png)
-
-After processing and staging on the Linux File System of the nodes, the JSON 
-records are placed on the HDFS, partitioned by the year of the patent.  The files 
-are then loaded into Hive tables using the open source serialization/deserialization (SerDe) 
-tools developed by [Roberto Congiu](https://github.com/rcongiu/Hive-JSON-Serde).  My Hive 
-schema is shown below with the same nested structure as the JSON files.
-
-![Open Source Serialization Tool](Figures/serde.png)
-
-This SerDe is perfect for my data, which is highly nested and has a very dynamic schema over the various 
-years.  Unlike some of the native Hive tools, this SerDe allows me to ignore the 
-superfluous information, and just extract what's needed.  More so, by taking full 
-advantage of Hive, nearly two decades of data (around 50GB) can be calculated in a batch process of only 20 minutes...very cool!  
-After this, the data is in the nice tabular form.
-
-![Tabular Data after Hive Cleansing](Figures/tabular.png)
-
-## Real-Time Queries
-
-After this the data is aggregated over different time periods and placed into HBase in a highly denormalized form, facilitating
- real-time queries. This is done using short-fat tables with many, many columns that are automatically generated from scripts. 
-By using multiple tables aggregated over different time granularities, the queries are easily sub-second for the whole data set.
-
-![HBase Schemas](Figures/hbase-schema.png) 
-
-For the front-end, I used the Thrift protocol via HappyBase with the Python Flask 
- library to setup a RESTful API.  This API is then queried for a nice visual UI, I modified 
-the Java Script templates from Highmaps.  Feel free to play around and discover where innovation lives at 
-[www.patentlyinnovative.net](http://www.patentlyinnovative.net).
-
-
-
+The front end of the project is running on Flask server. The charts were created using HighStock and Google graphs. Bootstrap was the choice for rending CSS.
